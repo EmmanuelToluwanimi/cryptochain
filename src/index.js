@@ -40,6 +40,9 @@ app.post('/api/mine', (req, res) => {
   res.redirect("/api/blocks");
 });
 
+app.get('/api/get-transaction-pool', (req, res) => {
+  res.json(transactionPool.transactionMap);
+});
 app.post('/api/transact', (req, res) => {
   const { amount, recipient } = req.body;
   let transaction = transactionPool.existingTransaction({
@@ -64,8 +67,6 @@ app.post('/api/transact', (req, res) => {
   }
 
   transactionPool.setTransaction(transaction);
-
-  console.log('transactionPool', transactionPool);
   res.json({
     type: 'success',
     transaction
