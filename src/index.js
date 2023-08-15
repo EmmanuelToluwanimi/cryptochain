@@ -11,8 +11,8 @@ const Wallet = require('./services/wallet');
 const app = express();
 const PORT = GENERATE_PORT();
 const blockchain = new Blockchain();
-const pubsub = new PubSub({ blockchain });
 const transactionPool = new TransactionPool();
+const pubsub = new PubSub({ blockchain, transactionPool });
 const wallet = new Wallet();
 
 
@@ -67,6 +67,7 @@ app.post('/api/transact', (req, res) => {
   }
 
   transactionPool.setTransaction(transaction);
+  pubsub.broadcastTransaction(transaction);
   res.json({
     type: 'success',
     transaction

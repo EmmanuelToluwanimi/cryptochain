@@ -3,13 +3,16 @@ const { createClient } = require('redis');
 const CHANNELS = {
   TEST: 'TEST',
   BLOCKCHAIN: 'BLOCKCHAIN',
+  TRANSACTION: 'TRANSACTION',
+
 }
 
 
 class PubSub {
-  constructor({ blockchain }) {
+  constructor({ blockchain, transactionPool }) {
 
     this.blockchain = blockchain;
+    this.transactionPool = transactionPool;
 
     this.publisher = createClient();
     this.subscriber = createClient();
@@ -21,8 +24,16 @@ class PubSub {
     console.log(`Message received. Channel: ${channel}, Message: ${message}.`);
     const parsedMessage = JSON.parse(message);
 
-    if (channel === CHANNELS.BLOCKCHAIN) {
-      this.blockchain.replaceChain(parsedMessage);
+    switch (channel) {
+      case CHANNELS.BLOCKCHAIN:
+        this.blockchain.replaceChain(parsedMessage);
+        break;
+      case CHANNELS.TRANSACTION:
+        this.transactionPool.parse(parsedMessage);
+        break;
+
+      default:
+        break;
     }
   }
 
@@ -43,13 +54,20 @@ class PubSub {
   async publish({ channel, message }) {
     await this.subscriber.unsubscribe(channel);
     await this.publisher.publish(channel, message);
-    await this.subscriber.subscribe(channel, (message) => {}, true);
+    await this.subscriber.subscribe(channel, (message) => { }, true);
   }
 
   async broadcastChain() {
     await this.publish({
       channel: CHANNELS.BLOCKCHAIN,
       message: JSON.stringify(this.blockchain.chain)
+    })
+  }
+
+  async broadcastTransaction(transaction) {
+    await this.publish({
+      channel: CHANNELS.TRANSACTION,
+      message: JSON.stringify(transaction)
     })
   }
 }
