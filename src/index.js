@@ -17,13 +17,22 @@ const wallet = new Wallet();
 
 
 const ROOT_NODE_ADDRESS = `http://localhost:${DEFAULT_PORT}`;
-const syncChains = () => {
+const syncWithRootState = () => {
   request(`${ROOT_NODE_ADDRESS}/api/blocks`, {}, (error, response, body) => {
     if (!error && response.statusCode === 200) {
       const rootChain = JSON.parse(body);
 
       console.log('replace chain on a sync with', rootChain);
       blockchain.replaceChain(rootChain);
+    }
+  })
+
+  request(`${ROOT_NODE_ADDRESS}/api/get-transaction-pool`, {}, (error, response, body) => {
+    if (!error && response.statusCode === 200) {
+      const rootTransactionMap = JSON.parse(body);
+
+      console.log('replace transaction pool map on a sync with', rootTransactionMap);
+      transactionPool.setMap(rootTransactionMap);
     }
   })
 }
@@ -78,6 +87,6 @@ app.post('/api/transact', (req, res) => {
 app.listen(PORT, () => {
   console.log(`Cryptochain app listening on port ${PORT}!`);
   if (PORT !== DEFAULT_PORT) {
-    syncChains()
+    syncWithRootState()
   }
 })
