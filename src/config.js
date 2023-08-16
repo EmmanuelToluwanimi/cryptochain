@@ -55,6 +55,11 @@ function GENERATE_PORT() {
     return PEER_PORT || DEFAULT_PORT;
 }
 const STARTING_BALANCE = 1000; 
+const MINING_REWARD = 50; 
+const REWARD_INPUT = {
+    address: '*authorized-reward*',
+
+}; 
 
 module.exports = {
     GENESIS_DATA,
@@ -62,5 +67,7 @@ module.exports = {
     hexToBinary,
     GENERATE_PORT,
     DEFAULT_PORT,
-    STARTING_BALANCE
+    STARTING_BALANCE,
+    REWARD_INPUT,
+    MINING_REWARD
 };

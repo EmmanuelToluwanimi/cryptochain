@@ -6,6 +6,7 @@ const { GENERATE_PORT, DEFAULT_PORT } = require('./config');
 const request = require('request');
 const TransactionPool = require('./services/transaction-pool');
 const Wallet = require('./services/wallet');
+const TransactionMiner = require('./services/transaction-miner');
 
 
 const app = express();
@@ -14,6 +15,14 @@ const blockchain = new Blockchain();
 const transactionPool = new TransactionPool();
 const pubsub = new PubSub({ blockchain, transactionPool });
 const wallet = new Wallet();
+const transactionMiner = new TransactionMiner({
+  blockchain,
+  transactionPool,
+  wallet,
+  pubsub
+});
+
+
 
 
 const ROOT_NODE_ADDRESS = `http://localhost:${DEFAULT_PORT}`;
@@ -38,6 +47,7 @@ const syncWithRootState = () => {
 }
 
 app.use(bodyParser.json());
+// blockchain routes
 app.get('/api/blocks', (req, res) => {
   res.json(blockchain.chain);
 });
@@ -49,6 +59,7 @@ app.post('/api/mine', (req, res) => {
   res.redirect("/api/blocks");
 });
 
+// transaction-pool routes
 app.get('/api/get-transaction-pool', (req, res) => {
   res.json(transactionPool.transactionMap);
 });
@@ -83,6 +94,12 @@ app.post('/api/transact', (req, res) => {
   });
 });
 
+// transaction-miner routes
+app.get('/api/mine-transactions', (req, res) => {
+  console.log('test', transactionPool);
+  transactionMiner.mineTransaction();
+  res.redirect("/api/blocks");
+});
 
 app.listen(PORT, () => {
   console.log(`Cryptochain app listening on port ${PORT}!`);
