@@ -1,5 +1,7 @@
 const Block = require("../block/block");
+const { REWARD_INPUT, MINING_REWARD } = require("../config");
 const cryptoHash = require("../crypto/crypto-hash");
+const Transaction = require("../services/transaction");
 
 class Blockchain {
     constructor() {
@@ -44,8 +46,39 @@ class Blockchain {
         };
 
         onSuccess && onSuccess();
-        console.log('Replacing chain with:', chain);
         this.chain = chain;
+        console.log(chain);
+    }
+
+    validTransactionData({chain}){
+        for (let index = 1; index < chain.length; index++) {
+            const block = chain[index];
+            
+            let rewardTransactionCount = 0;
+
+            for (const transaction of block.data) {
+                if (transaction.input.address === REWARD_INPUT.address) {
+                    rewardTransactionCount += 1;
+
+                    if (rewardTransactionCount > 1) {
+                        console.error('Miner rewards exceed limit');
+                        return false;
+                    }
+
+                    if (Object.values(transaction.outputMap)[0] !== MINING_REWARD) {
+                        console.error('Miner reward amount is invalid');
+                        return false;
+                    }
+                } else {
+                    if (!Transaction.validTransaction(transaction)) {
+                        console.error('Invalid transaction');
+                        return false;
+                    }
+                }
+            }
+        }
+
+        return true;
     }
 };
 
