@@ -29,25 +29,32 @@ class Wallet {
       throw new Error("Amount exceeds balance.");
     }
 
-    return new Transaction({senderWallet: this, recipient, amount});
+    return new Transaction({ senderWallet: this, recipient, amount });
   }
 
-  static calculateBalance({chain, address}){
+  static calculateBalance({ chain, address }) {
+    let hasConductedTransaction = false;
     let outputsTotal = 0;
 
-    for (let index = 1; index < chain.length; index++) {
-      const block = chain[index];
+    for (let i = chain.length - 1; i > 0; i--) {
+      const block = chain[i];
 
       for (let transaction of block.data) {
-        const addressOutput = transaction.outputMap[address];
+        if (transaction.input.address === address) {
+          hasConductedTransaction = true;
+        }
 
+        const addressOutput = transaction.outputMap[address];
         if (addressOutput) {
           outputsTotal += addressOutput;
         }
       }
+      if (hasConductedTransaction) {
+        break;
+      }
     }
-    
-    return STARTING_BALANCE + outputsTotal;
+
+    return hasConductedTransaction ? outputsTotal : STARTING_BALANCE + outputsTotal;
   }
 };
 
