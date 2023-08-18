@@ -101,6 +101,18 @@ app.get('/api/mine-transactions', (req, res) => {
   res.redirect("/api/blocks");
 });
 
+// wallet routes
+app.get('/api/wallet-info', (req, res) => {
+  const address = wallet.publicKey;
+  res.json({
+    address,
+    balance: Wallet.calculateBalance({
+      chain: blockchain.chain,
+      address
+    })
+  });
+});
+
 app.listen(PORT, () => {
   console.log(`Cryptochain app listening on port ${PORT}!`);
   if (PORT !== DEFAULT_PORT) {
