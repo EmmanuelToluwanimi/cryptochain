@@ -2,6 +2,7 @@ const Block = require("../block/block");
 const { REWARD_INPUT, MINING_REWARD } = require("../config");
 const cryptoHash = require("../crypto/crypto-hash");
 const Transaction = require("../services/transaction");
+const Wallet = require("../services/wallet");
 
 class Blockchain {
     constructor() {
@@ -35,7 +36,7 @@ class Blockchain {
         this.chain.push(newBlock);
     }
 
-    replaceChain(chain, onSuccess) {
+    replaceChain(chain, validateTransactions, onSuccess) {
         if (chain.length <= this.chain.length) {
             console.error('The incoming chain must be longer');
             return;
@@ -44,16 +45,20 @@ class Blockchain {
             console.error('The incoming chain must be valid');
             return;
         };
+        if (validateTransactions && !this.validTransactionData({ chain })) {
+            console.error('The incoming chain has invalid');
+            return;
+        };
 
         onSuccess && onSuccess();
         this.chain = chain;
         console.log(chain);
     }
 
-    validTransactionData({chain}){
+    validTransactionData({ chain }) {
         for (let index = 1; index < chain.length; index++) {
             const block = chain[index];
-            
+            const transactionSet = new Set();
             let rewardTransactionCount = 0;
 
             for (const transaction of block.data) {
@@ -73,6 +78,23 @@ class Blockchain {
                     if (!Transaction.validTransaction(transaction)) {
                         console.error('Invalid transaction');
                         return false;
+                    }
+
+                    const trueBalance = Wallet.calculateBalance({
+                        address: transaction.input.address,
+                        chain: this.chain
+                    })
+
+                    if (transaction.input.amount !== trueBalance) {
+                        console.error('Invalid input amount');
+                        return false;
+                    }
+
+                    if (transactionSet.has(transaction)) {
+                        console.error('An identical transaction error appears more than once in the block');
+                        return false;
+                    } else {
+                        transactionSet.add(transaction);
                     }
                 }
             }
