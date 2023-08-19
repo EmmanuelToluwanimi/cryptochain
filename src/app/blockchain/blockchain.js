@@ -1,5 +1,5 @@
 const Block = require("../block/block");
-const { REWARD_INPUT, MINING_REWARD } = require("../config");
+const { REWARD_INPUT, MINING_REWARD } = require("../../config");
 const cryptoHash = require("../crypto/crypto-hash");
 const Transaction = require("../services/transaction");
 const Wallet = require("../services/wallet");

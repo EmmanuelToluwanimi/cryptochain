@@ -1,13 +1,13 @@
 const express = require('express');
-const Blockchain = require('./blockchain/blockchain');
 const bodyParser = require('body-parser');
-const PubSub = require('./services/pubsub');
-const { GENERATE_PORT, DEFAULT_PORT } = require('./config');
 const request = require('request');
-const TransactionPool = require('./services/transaction-pool');
-const Wallet = require('./services/wallet');
-const TransactionMiner = require('./services/transaction-miner');
 const path = require('path');
+const Blockchain = require('./app/blockchain/blockchain');
+const PubSub = require('./app/services/pubsub');
+const { GENERATE_PORT, DEFAULT_PORT } = require('./config');
+const TransactionPool = require('./app/services/transaction-pool');
+const Wallet = require('./app/services/wallet');
+const TransactionMiner = require('./app/services/transaction-miner');
 
 
 const app = express();
