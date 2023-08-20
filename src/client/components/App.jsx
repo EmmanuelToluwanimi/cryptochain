@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import Blocks from './Blocks';
+import Logo from '../assets/logo.png';
 
 export default function App() {
   const [walletInfo, setWalletInfo] = useState({
@@ -9,21 +10,26 @@ export default function App() {
 
   async function FetchWalletInfo() {
     let response = await fetch('http://localhost:3000/api/wallet-info');
-    response = await response.json() 
+    response = await response.json()
     setWalletInfo(response);
   }
 
   useEffect(() => {
     FetchWalletInfo();
   }, [])
-  
+
 
   return (
-    <div>
+    <div className='App'>
+      <div>
+        <img src={Logo} alt="logo" className='logo' />
+      </div>
       <h2>Welcome to blockchain</h2>
-      <div>Address: {walletInfo.address}</div>
-      <div>Balance: {walletInfo.balance}</div>
-      <br/>
+      <div className='WalletInfo'>
+        <div>Address: {walletInfo.address}</div>
+        <div>Balance: {walletInfo.balance}</div>
+      </div> 
+      <br />
       <Blocks />
     </div>
   )

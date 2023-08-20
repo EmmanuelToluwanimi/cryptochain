@@ -4,7 +4,7 @@ const request = require('request');
 const path = require('path');
 const Blockchain = require('./app/blockchain/blockchain');
 const PubSub = require('./app/services/pubsub');
-const { GENERATE_PORT, DEFAULT_PORT } = require('./config');
+const { GENERATE_PORT, DEFAULT_PORT, generateWalletTransaction } = require('./config');
 const TransactionPool = require('./app/services/transaction-pool');
 const Wallet = require('./app/services/wallet');
 const TransactionMiner = require('./app/services/transaction-miner');
@@ -16,14 +16,14 @@ const blockchain = new Blockchain();
 const transactionPool = new TransactionPool();
 const pubsub = new PubSub({ blockchain, transactionPool });
 const wallet = new Wallet();
+const walletFoo = new Wallet();
+const walletBar = new Wallet();
 const transactionMiner = new TransactionMiner({
   blockchain,
   transactionPool,
   wallet,
   pubsub
 });
-
-
 
 
 const ROOT_NODE_ADDRESS = `http://localhost:${DEFAULT_PORT}`;
@@ -45,6 +45,44 @@ const syncWithRootState = () => {
       transactionPool.setMap(rootTransactionMap);
     }
   })
+}
+
+const walletAction = () => generateWalletTransaction({
+  amount: 5,
+  chain: blockchain.chain,
+  recipient: walletFoo.publicKey,
+  transactionPool,
+  wallet
+});
+const walletFooAction = () => generateWalletTransaction({
+  amount: 10,
+  chain: blockchain.chain,
+  recipient: walletBar.publicKey,
+  transactionPool,
+  wallet: walletFoo
+});
+const walletBarAction = () => generateWalletTransaction({
+  amount: 15,
+  chain: blockchain.chain,
+  recipient: wallet.publicKey,
+  transactionPool,
+  wallet: walletBar
+});
+
+function LoopWalletOperation() {
+  for (let i = 0; i < 10; i++) {
+    if (i % 3 === 0) {
+      walletAction();
+      walletFooAction();
+    } else if (i % 3 === 1) {
+      walletAction();
+      walletBarAction();
+    } else {
+      walletFooAction();
+      walletBarAction();
+    }
+    transactionMiner.mineTransaction();
+  }
 }
 
 app.use(bodyParser.json());
@@ -126,4 +164,5 @@ app.listen(PORT, () => {
   if (PORT !== DEFAULT_PORT) {
     syncWithRootState()
   }
+  LoopWalletOperation()
 })

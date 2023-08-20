@@ -61,6 +61,13 @@ const REWARD_INPUT = {
 
 }; 
 
+function generateWalletTransaction({wallet, recipient, amount, chain, transactionPool}) {
+    const transaction = wallet.createTransaction({
+        recipient, amount, chain
+    });
+    transactionPool.setTransaction(transaction);
+}
+
 module.exports = {
     GENESIS_DATA,
     MINE_RATE,
@@ -69,5 +76,6 @@ module.exports = {
     DEFAULT_PORT,
     STARTING_BALANCE,
     REWARD_INPUT,
-    MINING_REWARD
+    MINING_REWARD,
+    generateWalletTransaction
 };
